@@ -1,0 +1,11 @@
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/bin/Debug/net9.0/PhotoCoop.Domain.deps.json
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/bin/Debug/net9.0/PhotoCoop.Domain.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/bin/Debug/net9.0/PhotoCoop.Domain.pdb
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.AssemblyInfoInputs.cache
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.AssemblyInfo.cs
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.csproj.CoreCompileInputs.cache
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/refint/PhotoCoop.Domain.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/PhotoCoop.Domain.pdb
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Domain/obj/Debug/net9.0/ref/PhotoCoop.Domain.dll

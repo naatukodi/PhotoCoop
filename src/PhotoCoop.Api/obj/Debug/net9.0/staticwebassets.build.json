@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "J39NZjCgklkJ5dAvR3wMRdqyQ2r547/v7wjtw3H0ZeM=",
+  "Source": "PhotoCoop.Api",
+  "BasePath": "_content/PhotoCoop.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

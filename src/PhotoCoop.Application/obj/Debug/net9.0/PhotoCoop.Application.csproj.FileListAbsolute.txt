@@ -1,0 +1,15 @@
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/bin/Debug/net9.0/PhotoCoop.Application.deps.json
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/bin/Debug/net9.0/PhotoCoop.Application.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/bin/Debug/net9.0/PhotoCoop.Application.pdb
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/bin/Debug/net9.0/PhotoCoop.Domain.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/bin/Debug/net9.0/PhotoCoop.Domain.pdb
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.csproj.AssemblyReference.cache
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.AssemblyInfoInputs.cache
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.AssemblyInfo.cs
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.csproj.CoreCompileInputs.cache
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoo.3BEA0B32.Up2Date
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/refint/PhotoCoop.Application.dll
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/PhotoCoop.Application.pdb
+/Users/tirurao/Working/PhotoCoop/src/PhotoCoop.Application/obj/Debug/net9.0/ref/PhotoCoop.Application.dll
