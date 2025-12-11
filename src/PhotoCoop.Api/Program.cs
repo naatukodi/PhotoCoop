@@ -40,12 +40,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Enable Swagger in development
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Enable Swagger in all environments
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
