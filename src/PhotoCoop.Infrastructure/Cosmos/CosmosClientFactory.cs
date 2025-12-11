@@ -15,6 +15,14 @@ public class CosmosClientFactory
     {
         var opt = options.Value;
 
+        if (string.IsNullOrWhiteSpace(opt.AccountEndpoint) ||
+            string.IsNullOrWhiteSpace(opt.AccountKey))
+        {
+            throw new InvalidOperationException(
+                "CosmosDb configuration is missing AccountEndpoint or AccountKey. " +
+                "Set CosmosDb:AccountEndpoint and CosmosDb:AccountKey (or environment variables) to start the API.");
+        }
+
         Client = new CosmosClient(opt.AccountEndpoint, opt.AccountKey);
 
         Database = Client.CreateDatabaseIfNotExistsAsync(opt.DatabaseId).GetAwaiter().GetResult();

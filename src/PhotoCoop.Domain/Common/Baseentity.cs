@@ -1,7 +1,10 @@
 namespace PhotoCoop.Domain.Common;
 
+using Newtonsoft.Json;
+
 public abstract class Entity
 {
+    [JsonProperty(PropertyName = "id")]
     public string Id { get; protected set; } = Guid.NewGuid().ToString();
 }
 
