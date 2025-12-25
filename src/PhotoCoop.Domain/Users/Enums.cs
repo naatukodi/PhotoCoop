@@ -30,3 +30,30 @@ public enum BookingStatus
     CancelledByCustomer = 8,
     CancelledByAdmin = 9
 }
+
+public enum MembershipStatus
+{
+    None = 0,
+    Active = 1,
+    PendingRenewal = 2,
+    Expired = 3,
+    Suspended = 4
+}
+
+public enum PaymentStatus
+{
+    Pending = 1,
+    Paid = 2,
+    Failed = 3,
+    Refunded = 4
+}
+
+public enum PaymentMode
+{
+    Upi = 1,
+    Card = 2,
+    NetBanking = 3,
+    Cash = 4,
+    BankTransfer = 5,
+    Other = 99
+}

@@ -33,6 +33,13 @@ public class CreatePhotographerUserRequest
     public List<OccasionType> Occasions { get; set; } = new();
 
     public List<RateCardDto> RateCards { get; set; } = new();
+
+    // ✅ NEW: Admin mapping (who manages this photographer)
+    public string? MappedAdminUserId { get; set; }      // admin/manager userId
+    public string? AdminMappedByUserId { get; set; }    // superadmin/admin who mapped
+
+    // ✅ NEW: Membership initialization (optional at creation time)
+    public MembershipInitDto? Membership { get; set; }
 }
 
 public class RateCardDto
@@ -52,4 +59,15 @@ public class CreateAdminUserRequest
 
     public bool IsSuperAdmin { get; set; }
     public List<string> ManagedPincodes { get; set; } = new();
+}
+public class MembershipInitDto
+{
+    public DateTime MembershipStartDateUtc { get; set; }
+    public DateTime RenewalDateUtc { get; set; }
+    public decimal Fee { get; set; }
+    public string Currency { get; set; } = "INR";
+
+    public PaymentMode Mode { get; set; }
+    public PaymentStatus Status { get; set; }
+    public string? GatewayTransactionId { get; set; }
 }

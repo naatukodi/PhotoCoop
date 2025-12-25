@@ -1,6 +1,7 @@
 using PhotoCoop.Application.Bookings;
 using PhotoCoop.Application.Matching;
 using PhotoCoop.Application.Users;
+using PhotoCoop.Application.Admins;
 using PhotoCoop.Domain.Bookings;
 using PhotoCoop.Domain.Users;
 using PhotoCoop.Infrastructure.Cosmos;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IPhotographerMatchingService, PhotographerMatchingService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 // Add controllers and configure JSON options
 builder.Services

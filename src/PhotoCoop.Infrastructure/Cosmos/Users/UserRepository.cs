@@ -54,4 +54,55 @@ public class UserRepository : CosmosRepositoryBase<DomainUser>, IUserRepository
 
         return results;
     }
+
+    // ✅ NEW: mapped admin query
+    public async Task<IReadOnlyList<DomainUser>> GetPhotographersByMappedAdminAsync(
+        string mappedAdminUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _container.GetItemQueryIterator<DomainUser>(
+            new QueryDefinition(@"
+                SELECT * FROM c
+                WHERE c.userType = @photographerType
+                  AND c.photographerProfile.mappedAdminUserId = @mappedAdminUserId
+            ")
+            .WithParameter("@photographerType", (int)UserType.Photographer)
+            .WithParameter("@mappedAdminUserId", mappedAdminUserId)
+        );
+
+        var results = new List<DomainUser>();
+        while (query.HasMoreResults)
+        {
+            var response = await query.ReadNextAsync(cancellationToken);
+            results.AddRange(response);
+        }
+        return results;
+    }
+
+    // ✅ NEW: mapped admin + pincode filter (optional, but useful)
+    public async Task<IReadOnlyList<DomainUser>> GetPhotographersByMappedAdminAndPincodeAsync(
+        string mappedAdminUserId,
+        string pincode,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _container.GetItemQueryIterator<DomainUser>(
+            new QueryDefinition(@"
+                SELECT * FROM c
+                WHERE c.userType = @photographerType
+                  AND c.photographerProfile.mappedAdminUserId = @mappedAdminUserId
+                  AND ARRAY_CONTAINS(c.pincodes, @pincode)
+            ")
+            .WithParameter("@photographerType", (int)UserType.Photographer)
+            .WithParameter("@mappedAdminUserId", mappedAdminUserId)
+            .WithParameter("@pincode", pincode)
+        );
+
+        var results = new List<DomainUser>();
+        while (query.HasMoreResults)
+        {
+            var response = await query.ReadNextAsync(cancellationToken);
+            results.AddRange(response);
+        }
+        return results;
+    }
 }

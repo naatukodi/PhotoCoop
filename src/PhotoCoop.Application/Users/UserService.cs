@@ -89,6 +89,32 @@ public class UserService : IUserService
             profile.AddRateCard(rateCard);
         }
 
+        // ✅ Apply admin mapping (optional)
+        if (!string.IsNullOrWhiteSpace(request.MappedAdminUserId) &&
+            !string.IsNullOrWhiteSpace(request.AdminMappedByUserId))
+        {
+            profile.MapToAdmin(request.MappedAdminUserId!, request.AdminMappedByUserId!);
+        }
+
+        // ✅ Apply initial membership (optional)
+        if (request.Membership != null)
+        {
+            var payment = new PaymentDetails(
+                request.Membership.Fee,
+                request.Membership.Mode,
+                request.Membership.Status,
+                request.Membership.Currency,
+                request.Membership.GatewayTransactionId
+            );
+
+            profile.ActivateMembership(
+                request.Membership.MembershipStartDateUtc,
+                request.Membership.RenewalDateUtc,
+                request.Membership.Fee,
+                payment
+            );
+        }
+
         user.SetPhotographerProfile(profile);
 
         return await _userRepository.AddAsync(user, cancellationToken);
