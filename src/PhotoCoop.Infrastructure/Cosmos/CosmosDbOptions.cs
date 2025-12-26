@@ -10,4 +10,6 @@ public class CosmosDbOptions
 
     public string UsersContainerId { get; set; } = "Users";
     public string BookingsContainerId { get; set; } = "Bookings";
+    public string PaymentAttemptsContainerId { get; set; } = "PaymentAttempts";
+
 }

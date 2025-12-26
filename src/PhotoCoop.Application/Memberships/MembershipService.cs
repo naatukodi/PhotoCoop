@@ -1,4 +1,5 @@
 using PhotoCoop.Domain.Users;
+using PhotoCoop.Domain.Payments;
 
 namespace PhotoCoop.Application.Memberships;
 
@@ -7,15 +8,19 @@ public interface IMembershipService
     Task<User> RenewMembershipAsync(RenewMembershipRequest request, CancellationToken cancellationToken = default);
     Task<User> MarkMembershipExpiredAsync(MarkMembershipExpiredRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PaymentHistoryItemDto>> GetPaymentHistoryAsync(string photographerUserId, CancellationToken cancellationToken = default);
+    Task<User> RenewMembershipFromPaymentAttemptAsync(string paymentAttemptId, CancellationToken cancellationToken = default);
+
 }
 
 public class MembershipService : IMembershipService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPaymentAttemptRepository _attemptRepository;
 
-    public MembershipService(IUserRepository userRepository)
+    public MembershipService(IUserRepository userRepository, IPaymentAttemptRepository attemptRepository)
     {
         _userRepository = userRepository;
+        _attemptRepository = attemptRepository;
     }
 
     public async Task<User> RenewMembershipAsync(RenewMembershipRequest request, CancellationToken cancellationToken = default)
@@ -36,6 +41,37 @@ public class MembershipService : IMembershipService
         );
 
         user.PhotographerProfile.RenewMembership(request.RenewalDateUtc, request.Fee, payment);
+
+        return await _userRepository.UpdateAsync(user, cancellationToken);
+    }
+
+    public async Task<User> RenewMembershipFromPaymentAttemptAsync(string paymentAttemptId, CancellationToken cancellationToken = default)
+    {
+        var attempt = await _attemptRepository.GetByIdAsync(paymentAttemptId, cancellationToken);
+        if (attempt == null) throw new InvalidOperationException("Payment attempt not found.");
+
+        if (attempt.Status != PaymentAttemptStatus.Paid)
+            throw new InvalidOperationException("Payment is not successful.");
+
+        var user = await _userRepository.GetByIdAsync(attempt.PhotographerUserId, cancellationToken);
+        if (user == null || user.UserType != UserType.Photographer || user.PhotographerProfile == null)
+            throw new InvalidOperationException("Invalid photographer.");
+
+        // Idempotency: if renewal already moved past target date, do nothing
+        var currentRenewal = user.PhotographerProfile.Membership.RenewalDateUtc;
+        if (currentRenewal.HasValue && currentRenewal.Value >= attempt.RenewalDateUtc)
+            return user;
+
+        // Record payment in membership history (map Razorpay -> domain payment model)
+        var payment = new PaymentDetails(
+            amount: attempt.Amount,
+            mode: PhotoCoop.Domain.Users.PaymentMode.Other,     // Razorpay -> map based on webhook payload later
+            status: PhotoCoop.Domain.Users.PaymentStatus.Paid,
+            currency: attempt.Currency,
+            gatewayTransactionId: attempt.RazorpayPaymentId
+        );
+
+        user.PhotographerProfile.RenewMembership(attempt.RenewalDateUtc, attempt.Amount, payment);
 
         return await _userRepository.UpdateAsync(user, cancellationToken);
     }

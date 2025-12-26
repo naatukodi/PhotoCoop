@@ -10,6 +10,7 @@ public class CosmosClientFactory
 
     public Container UsersContainer { get; }
     public Container BookingsContainer { get; }
+    public Container PaymentAttemptsContainer { get; }
 
     public CosmosClientFactory(IOptions<CosmosDbOptions> options)
     {
@@ -35,6 +36,11 @@ public class CosmosClientFactory
         BookingsContainer = Database.CreateContainerIfNotExistsAsync(
             opt.BookingsContainerId,
             partitionKeyPath: "/customerUserId" // bookings grouped by customer
+        ).GetAwaiter().GetResult();
+
+        PaymentAttemptsContainer = Database.CreateContainerIfNotExistsAsync(
+            opt.PaymentAttemptsContainerId,
+            partitionKeyPath: "/partitionKey" // we will serialize PartitionKey
         ).GetAwaiter().GetResult();
     }
 }

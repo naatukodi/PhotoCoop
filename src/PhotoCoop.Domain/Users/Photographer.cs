@@ -107,7 +107,7 @@ public class MembershipDetails
         MembershipStartDateUtc = startDateUtc;
         RenewalDateUtc = renewalDateUtc;
         MembershipFee = fee;
-        LastPayment = payment;
+        RecordPayment(payment);
     }
 
     public void MarkExpired()
@@ -120,13 +120,19 @@ public class MembershipDetails
         Status = MembershipStatus.Active;
         RenewalDateUtc = renewalDateUtc;
         MembershipFee = fee;
-        LastPayment = payment;
+        RecordPayment(payment);
     }
 
     public void Suspend(string reason, string? changedByAdminUserId = null)
     {
         Status = MembershipStatus.Suspended;
         // If you want, add SuspensionReason fields here.
+    }
+
+    private void RecordPayment(PaymentDetails payment)
+    {
+        LastPayment = payment;
+        PaymentHistory.Add(payment);
     }
 }
 
