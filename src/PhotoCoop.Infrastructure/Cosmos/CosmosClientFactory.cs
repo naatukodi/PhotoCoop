@@ -11,6 +11,8 @@ public class CosmosClientFactory
     public Container UsersContainer { get; }
     public Container BookingsContainer { get; }
     public Container PaymentAttemptsContainer { get; }
+    public Container FundraisingEventsContainer { get; }
+    public Container DonationAttemptsContainer { get; }
 
     public CosmosClientFactory(IOptions<CosmosDbOptions> options)
     {
@@ -41,6 +43,16 @@ public class CosmosClientFactory
         PaymentAttemptsContainer = Database.CreateContainerIfNotExistsAsync(
             opt.PaymentAttemptsContainerId,
             partitionKeyPath: "/partitionKey" // we will serialize PartitionKey
+        ).GetAwaiter().GetResult();
+
+        FundraisingEventsContainer = Database.CreateContainerIfNotExistsAsync(
+            opt.FundraisingEventsContainerId,
+            partitionKeyPath: "/id" // simple partitioning by id
+        ).GetAwaiter().GetResult();
+
+        DonationAttemptsContainer = Database.CreateContainerIfNotExistsAsync(
+            opt.DonationAttemptsContainerId,
+            partitionKeyPath: "/id" // DonationAttempt currently partitions by id
         ).GetAwaiter().GetResult();
     }
 }

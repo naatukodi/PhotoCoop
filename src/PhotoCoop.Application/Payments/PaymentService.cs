@@ -7,7 +7,7 @@ namespace PhotoCoop.Application.Payments;
 public interface IPaymentService
 {
     Task<StartMembershipRenewalResponse> StartMembershipRenewalAsync(StartMembershipRenewalRequest request, CancellationToken ct = default);
-    Task HandleWebhookAsync(string rawBody, string signatureHeader, CancellationToken ct = default);
+    Task<bool> HandleWebhookAsync(RazorpayWebhookEvent evt, CancellationToken ct = default);
     Task RefundAsync(string paymentAttemptId, string reason, CancellationToken ct = default);
 }
 
@@ -75,45 +75,42 @@ public class PaymentService : IPaymentService
         };
     }
 
-    // rawBody must be exact request body (no re-serialization)
-    public async Task HandleWebhookAsync(string rawBody, string signatureHeader, CancellationToken ct = default)
+    public async Task<bool> HandleWebhookAsync(RazorpayWebhookEvent evt, CancellationToken ct = default)
     {
-        // Signature verification is mandatory for webhooks:
-        // expected = HMAC_SHA256(raw_body, webhook_secret) :contentReference[oaicite:2]{index=2}
-        if (!RazorpaySignatureVerifier.VerifyWebhook(rawBody, signatureHeader, _rzpOptions.WebhookSecret))
-            throw new UnauthorizedAccessException("Invalid webhook signature.");
-
-        // Parse minimal fields from webhook payload:
-        // Razorpay sends event and payload.payment.entity / payload.order.entity, etc.
-        var evt = RazorpayWebhookParser.Parse(rawBody);
+        if (string.IsNullOrWhiteSpace(evt.OrderId))
+            return false;
 
         if (evt.Event == "payment.captured")
         {
             // locate attempt by order_id
             var attempt = await _attemptRepo.GetByRazorpayOrderIdAsync(evt.OrderId!, ct);
-            if (attempt == null) return; // ignore or log
+            if (attempt == null) return false; // ignore or log
 
             // idempotency: if already paid/refunded etc, ignore
             if (attempt.Status == PaymentAttemptStatus.Paid || attempt.Status == PaymentAttemptStatus.Refunded)
-                return;
+                return true;
 
             attempt.MarkPaid(evt.PaymentId!, evt.SignatureMaybe);
             await _attemptRepo.UpdateAsync(attempt, ct);
 
             // ✅ Renew membership ONLY on webhook
             await _membershipService.RenewMembershipFromPaymentAttemptAsync(attempt.Id, ct);
+            return true;
         }
         else if (evt.Event == "payment.failed")
         {
             var attempt = await _attemptRepo.GetByRazorpayOrderIdAsync(evt.OrderId!, ct);
-            if (attempt == null) return;
+            if (attempt == null) return false;
 
             if (attempt.Status == PaymentAttemptStatus.Paid || attempt.Status == PaymentAttemptStatus.Refunded)
-                return;
+                return true;
 
             attempt.MarkFailed();
             await _attemptRepo.UpdateAsync(attempt, ct);
+            return true;
         }
+
+        return false;
     }
 
     public async Task RefundAsync(string paymentAttemptId, string reason, CancellationToken ct = default)

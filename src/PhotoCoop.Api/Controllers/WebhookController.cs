@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using PhotoCoop.Application.Payments;
+using PhotoCoop.Application.Fundraising;
+using PhotoCoop.Domain.Payments;
 
 namespace PhotoCoop.Api.Controllers;
 
@@ -8,10 +11,17 @@ namespace PhotoCoop.Api.Controllers;
 public class WebhookController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
+    private readonly IDonationWebhookService _donationService;
+    private readonly RazorpayOptions _rzpOptions;
 
-    public WebhookController(IPaymentService paymentService)
+    public WebhookController(
+        IPaymentService paymentService,
+        IDonationWebhookService donationService,
+        IOptions<RazorpayOptions> rzpOptions)
     {
         _paymentService = paymentService;
+        _donationService = donationService;
+        _rzpOptions = rzpOptions.Value;
     }
 
     [HttpPost]
@@ -24,7 +34,16 @@ public class WebhookController : ControllerBase
         if (string.IsNullOrWhiteSpace(signature))
             return Unauthorized();
 
-        await _paymentService.HandleWebhookAsync(rawBody, signature, ct);
-        return Ok();
+        if (!RazorpaySignatureVerifier.VerifyWebhook(rawBody, signature, _rzpOptions.WebhookSecret))
+            return Unauthorized();
+
+        var evt = RazorpayWebhookParser.Parse(rawBody);
+
+        var membershipHandled = await _paymentService.HandleWebhookAsync(evt, ct);
+        var donationHandled = membershipHandled
+            ? false
+            : await _donationService.HandleWebhookAsync(evt, ct);
+
+        return Ok(new { membershipHandled, donationHandled });
     }
 }

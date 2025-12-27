@@ -12,6 +12,9 @@ using PhotoCoop.Infrastructure.Cosmos.Bookings;
 using PhotoCoop.Infrastructure.Cosmos.Users;
 using PhotoCoop.Infrastructure.Cosmos.Payments;
 using PhotoCoop.Infrastructure.Razorpay;
+using PhotoCoop.Application.Fundraising;
+using PhotoCoop.Domain.Fundraising;
+using PhotoCoop.Infrastructure.Cosmos.Fundraising;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +23,9 @@ builder.Services.Configure<CosmosDbOptions>(
     builder.Configuration.GetSection(CosmosDbOptions.SectionName));
 
 // Razorpay configuration
-builder.Services.Configure<PhotoCoop.Infrastructure.Razorpay.RazorpayOptions>(
-    builder.Configuration.GetSection(PhotoCoop.Infrastructure.Razorpay.RazorpayOptions.SectionName));
+// Razorpay configuration
+builder.Services.Configure<PhotoCoop.Domain.Payments.RazorpayOptions>(
+    builder.Configuration.GetSection(PhotoCoop.Domain.Payments.RazorpayOptions.SectionName));
 
 // Register CosmosClientFactory as a singleton
 builder.Services.AddSingleton<CosmosClientFactory>();
@@ -38,6 +42,11 @@ builder.Services.AddScoped<IPhotographerMatchingService, PhotographerMatchingSer
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IFundraisingEventRepository, FundraisingEventRepository>();
+builder.Services.AddScoped<IDonationAttemptRepository, DonationAttemptRepository>();
+
+builder.Services.AddScoped<IFundraisingService, FundraisingService>();
+builder.Services.AddScoped<IDonationWebhookService, DonationWebhookService>();
 
 // HTTP clients / gateways
 builder.Services.AddHttpClient<IRazorpayClient, RazorpayClient>();
