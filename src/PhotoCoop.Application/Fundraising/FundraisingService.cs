@@ -36,8 +36,8 @@ public class FundraisingService : IFundraisingService
         if (request.AmountMinor <= 0)
             throw new InvalidOperationException("Amount must be > 0.");
 
-        // Receipt should be unique
-        var receipt = $"don_{request.EventId}_{Guid.NewGuid():N}";
+        // Receipt should be unique and <= 40 chars for Razorpay
+        var receipt = BuildRazorpayReceipt("don", request.EventId);
 
         // Create Razorpay Order
         var order = await _razorpay.CreateOrderAsync(new RazorpayOrderCreateRequest
@@ -77,5 +77,19 @@ public class FundraisingService : IFundraisingService
             Receipt = receipt,
             EventId = request.EventId
         };
+    }
+
+    private static string BuildRazorpayReceipt(string prefix, string id)
+    {
+        const int max = 40;
+        var ts = DateTime.UtcNow.ToString("yyMMddHHmmss");
+        var unique = Guid.NewGuid().ToString("N")[..6];
+        var suffix = $"_{ts}_{unique}";
+
+        var remaining = max - prefix.Length - suffix.Length - 1;
+        if (remaining < 0) remaining = 0;
+
+        var trimmedId = id.Length > remaining ? id[..remaining] : id;
+        return $"{prefix}_{trimmedId}{suffix}";
     }
 }

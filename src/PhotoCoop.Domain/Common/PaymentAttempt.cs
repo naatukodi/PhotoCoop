@@ -1,4 +1,5 @@
 using PhotoCoop.Domain.Common;
+using Newtonsoft.Json;
 
 namespace PhotoCoop.Domain.Payments;
 
@@ -14,7 +15,8 @@ public enum PaymentAttemptStatus
 public class PaymentAttempt : Entity
 {
     // Cosmos
-    public string PartitionKey => PhotographerUserId; // recommended
+    [JsonProperty(PropertyName = "partitionKey")]
+    public string PartitionKey { get; private set; } = null!; // recommended
 
     // Business
     public string PhotographerUserId { get; private set; } = null!;
@@ -58,6 +60,7 @@ public class PaymentAttempt : Entity
         RazorpayOrderId = razorpayOrderId;
         RenewalDateUtc = renewalDateUtc;
         ChangedByAdminUserId = changedByAdminUserId;
+        PartitionKey = photographerUserId;
     }
 
     public void MarkPaid(string razorpayPaymentId, string? razorpaySignature)

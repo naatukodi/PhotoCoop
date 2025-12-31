@@ -60,8 +60,16 @@ public class PaymentAttemptRepository : IPaymentAttemptRepository
 
     public async Task<PaymentAttempt> AddAsync(PaymentAttempt attempt, CancellationToken ct = default)
     {
-        var resp = await _container.CreateItemAsync(attempt, new PartitionKey(attempt.PartitionKey), cancellationToken: ct);
-        return resp.Resource;
+        try
+        {
+            // Upsert to tolerate retries without throwing 409 conflicts
+            var resp = await _container.UpsertItemAsync(attempt, new PartitionKey(attempt.PartitionKey), cancellationToken: ct);
+            return resp.Resource;
+        }
+        catch (CosmosException ex)
+        {
+            throw new InvalidOperationException($"Failed to persist PaymentAttempt (status {(int)ex.StatusCode}, subStatus {ex.SubStatusCode}): {ex.Message}", ex);
+        }
     }
 
     public async Task<PaymentAttempt> UpdateAsync(PaymentAttempt attempt, CancellationToken ct = default)

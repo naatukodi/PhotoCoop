@@ -42,7 +42,7 @@ public class PaymentService : IPaymentService
         // Razorpay wants smallest unit: INR -> paise
         var amountPaise = (int)Math.Round(request.Fee * 100m, MidpointRounding.AwayFromZero);
 
-        var receipt = $"memrenew_{request.PhotographerUserId}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var receipt = BuildRazorpayReceipt("memren", request.PhotographerUserId);
         var order = await _razorpay.CreateOrderAsync(new RazorpayOrderCreateRequest
         {
             AmountPaise = amountPaise,
@@ -136,5 +136,20 @@ public class PaymentService : IPaymentService
 
         attempt.MarkRefunded(refund.Id);
         await _attemptRepo.UpdateAsync(attempt, ct);
+    }
+
+    private static string BuildRazorpayReceipt(string prefix, string id)
+    {
+        const int max = 40;
+        var ts = DateTime.UtcNow.ToString("yyMMddHHmmss");
+        var unique = Guid.NewGuid().ToString("N")[..6];
+        var suffix = $"_{ts}_{unique}"; // 1 + 12 + 1 + 6 = 20 chars
+
+        // leave room for prefix + '_' + suffix
+        var remaining = max - prefix.Length - suffix.Length - 1;
+        if (remaining < 0) remaining = 0;
+
+        var trimmedId = id.Length > remaining ? id[..remaining] : id;
+        return $"{prefix}_{trimmedId}{suffix}";
     }
 }

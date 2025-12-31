@@ -42,9 +42,10 @@ public class RazorpayClient : IRazorpayClient
         msg.Headers.Authorization = _authHeader;
 
         var resp = await _http.SendAsync(msg, ct);
-        resp.EnsureSuccessStatusCode();
-
         var body = await resp.Content.ReadAsStringAsync(ct);
+        if (!resp.IsSuccessStatusCode)
+            throw new HttpRequestException($"Razorpay CreateOrder failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+
         return JsonSerializer.Deserialize<RazorpayOrderCreateResponse>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 
@@ -58,9 +59,10 @@ public class RazorpayClient : IRazorpayClient
         msg.Headers.Authorization = _authHeader;
 
         var resp = await _http.SendAsync(msg, ct);
-        resp.EnsureSuccessStatusCode();
-
         var body = await resp.Content.ReadAsStringAsync(ct);
+        if (!resp.IsSuccessStatusCode)
+            throw new HttpRequestException($"Razorpay RefundPayment failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+
         return JsonSerializer.Deserialize<RazorpayRefundResponse>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
 
