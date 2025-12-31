@@ -15,13 +15,13 @@ public class RenewMembershipRequest
     public string? GatewayTransactionId { get; set; }
 
     // Audit
-    public string ChangedByAdminUserId { get; set; } = null!;
+    public string? ChangedByAdminUserId { get; set; }
 }
 
 public class MarkMembershipExpiredRequest
 {
     public string PhotographerUserId { get; set; } = null!;
-    public string ChangedByAdminUserId { get; set; } = null!;
+    public string? ChangedByAdminUserId { get; set; }
     public string? Remarks { get; set; }
 }
 
