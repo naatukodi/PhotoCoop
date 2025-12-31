@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PhotoCoop.Application.Memberships;
+using PhotoCoop.Application.Payments;
 
 namespace PhotoCoop.Api.Controllers;
 
@@ -8,10 +9,20 @@ namespace PhotoCoop.Api.Controllers;
 public class MembershipsController : ControllerBase
 {
     private readonly IMembershipService _membershipService;
+    private readonly IPaymentService _paymentService;
 
-    public MembershipsController(IMembershipService membershipService)
+    public MembershipsController(IMembershipService membershipService, IPaymentService paymentService)
     {
         _membershipService = membershipService;
+        _paymentService = paymentService;
+    }
+
+    // POST /api/memberships/renew/order
+    [HttpPost("renew/order")]
+    public async Task<IActionResult> StartRenewalOrder([FromBody] StartMembershipRenewalRequest request, CancellationToken cancellationToken)
+    {
+        var response = await _paymentService.StartMembershipRenewalAsync(request, cancellationToken);
+        return Ok(response);
     }
 
     // POST /api/memberships/renew
