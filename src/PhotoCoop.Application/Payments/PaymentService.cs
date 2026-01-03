@@ -85,7 +85,7 @@ public class PaymentService : IPaymentService
             return false;
         }
 
-        if (evt.Event == "payment.captured")
+        if (evt.Event is "payment.captured" or "payment.authorized")
         {
             // locate attempt by order_id
             var attempt = await _attemptRepo.GetByRazorpayOrderIdAsync(evt.OrderId!, ct);
@@ -102,11 +102,17 @@ public class PaymentService : IPaymentService
                 return true;
             }
 
+            if (string.IsNullOrWhiteSpace(evt.PaymentId))
+            {
+                Console.WriteLine($"[PaymentWebhook] Missing payment id for event {evt.Event} on order {evt.OrderId}, ignoring.");
+                return false;
+            }
+
             attempt.MarkPaid(evt.PaymentId!, evt.SignatureMaybe);
             await _attemptRepo.UpdateAsync(attempt, ct);
 
             // ✅ Renew membership ONLY on webhook
-            Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} marked paid. Renewing membership.");
+            Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} marked paid via {evt.Event}. Renewing membership.");
             await _membershipService.RenewMembershipFromPaymentAttemptAsync(attempt.Id, ct);
             Console.WriteLine($"[PaymentWebhook] Membership renewal complete for attempt {attempt.Id}.");
             return true;
