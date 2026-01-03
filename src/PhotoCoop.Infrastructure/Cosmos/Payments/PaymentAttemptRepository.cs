@@ -46,7 +46,7 @@ public class PaymentAttemptRepository : IPaymentAttemptRepository
     public async Task<PaymentAttempt?> GetByRazorpayPaymentIdAsync(string razorpayPaymentId, CancellationToken ct = default)
     {
         var q = _container.GetItemQueryIterator<PaymentAttempt>(
-            new QueryDefinition("SELECT * FROM c WHERE c.razorpayPaymentId = @pid")
+            new QueryDefinition("SELECT * FROM c WHERE c.RazorpayPaymentId = @pid")
                 .WithParameter("@pid", razorpayPaymentId));
 
         while (q.HasMoreResults)

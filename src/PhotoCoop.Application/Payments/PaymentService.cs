@@ -113,7 +113,7 @@ public class PaymentService : IPaymentService
 
             // ✅ Renew membership ONLY on webhook
             Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} marked paid via {evt.Event}. Renewing membership.");
-            await _membershipService.RenewMembershipFromPaymentAttemptAsync(attempt.Id, ct);
+            await _membershipService.RenewMembershipFromPaymentAttemptAsync(attempt, ct);
             Console.WriteLine($"[PaymentWebhook] Membership renewal complete for attempt {attempt.Id}.");
             return true;
         }

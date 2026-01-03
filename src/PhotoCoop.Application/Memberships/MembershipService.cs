@@ -8,7 +8,7 @@ public interface IMembershipService
     Task<User> RenewMembershipAsync(RenewMembershipRequest request, CancellationToken cancellationToken = default);
     Task<User> MarkMembershipExpiredAsync(MarkMembershipExpiredRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PaymentHistoryItemDto>> GetPaymentHistoryAsync(string photographerUserId, CancellationToken cancellationToken = default);
-    Task<User> RenewMembershipFromPaymentAttemptAsync(string paymentAttemptId, CancellationToken cancellationToken = default);
+    Task<User> RenewMembershipFromPaymentAttemptAsync(PaymentAttempt paymentAttempt, CancellationToken cancellationToken = default);
 
 }
 
@@ -45,33 +45,33 @@ public class MembershipService : IMembershipService
         return await _userRepository.UpdateAsync(user, cancellationToken);
     }
 
-    public async Task<User> RenewMembershipFromPaymentAttemptAsync(string paymentAttemptId, CancellationToken cancellationToken = default)
+    public async Task<User> RenewMembershipFromPaymentAttemptAsync(PaymentAttempt paymentAttempt, CancellationToken cancellationToken = default)
     {
-        var attempt = await _attemptRepository.GetByIdAsync(paymentAttemptId, cancellationToken);
-        if (attempt == null) throw new InvalidOperationException("Payment attempt not found.");
+        if (paymentAttempt == null) throw new ArgumentNullException(nameof(paymentAttempt));
 
-        if (attempt.Status != PaymentAttemptStatus.Paid)
+        // The webhook already marked the attempt paid; avoid a stale read by trusting the passed attempt.
+        if (paymentAttempt.Status != PaymentAttemptStatus.Paid)
             throw new InvalidOperationException("Payment is not successful.");
 
-        var user = await _userRepository.GetByIdAsync(attempt.PhotographerUserId, cancellationToken);
+        var user = await _userRepository.GetByIdAsync(paymentAttempt.PhotographerUserId, cancellationToken);
         if (user == null || user.UserType != UserType.Photographer || user.PhotographerProfile == null)
             throw new InvalidOperationException("Invalid photographer.");
 
         // Idempotency: if renewal already moved past target date, do nothing
         var currentRenewal = user.PhotographerProfile.Membership.RenewalDateUtc;
-        if (currentRenewal.HasValue && currentRenewal.Value >= attempt.RenewalDateUtc)
+        if (currentRenewal.HasValue && currentRenewal.Value >= paymentAttempt.RenewalDateUtc)
             return user;
 
         // Record payment in membership history (map Razorpay -> domain payment model)
         var payment = new PaymentDetails(
-            amount: attempt.Amount,
+            amount: paymentAttempt.Amount,
             mode: PhotoCoop.Domain.Users.PaymentMode.Other,     // Razorpay -> map based on webhook payload later
             status: PhotoCoop.Domain.Users.PaymentStatus.Paid,
-            currency: attempt.Currency,
-            gatewayTransactionId: attempt.RazorpayPaymentId
+            currency: paymentAttempt.Currency,
+            gatewayTransactionId: paymentAttempt.RazorpayPaymentId
         );
 
-        user.PhotographerProfile.RenewMembership(attempt.RenewalDateUtc, attempt.Amount, payment);
+        user.PhotographerProfile.RenewMembership(paymentAttempt.RenewalDateUtc, paymentAttempt.Amount, payment);
 
         return await _userRepository.UpdateAsync(user, cancellationToken);
     }
