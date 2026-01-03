@@ -29,8 +29,10 @@ public class WebhookController : ControllerBase
     {
         using var reader = new StreamReader(Request.Body);
         var rawBody = await reader.ReadToEndAsync(ct);
+        Console.WriteLine($"[Webhook] Raw request body: {rawBody}");
 
         var signature = Request.Headers["X-Razorpay-Signature"].ToString();
+        Console.WriteLine($"[Webhook] Signature header: {signature}");
         if (string.IsNullOrWhiteSpace(signature))
             return Unauthorized();
 
@@ -38,6 +40,7 @@ public class WebhookController : ControllerBase
             return Unauthorized();
 
         var evt = RazorpayWebhookParser.Parse(rawBody);
+        Console.WriteLine($"[Webhook] Parsed event: type={evt.Event}, orderId={evt.OrderId}, paymentId={evt.PaymentId}");
 
         var membershipHandled = await _paymentService.HandleWebhookAsync(evt, ct);
         var donationHandled = membershipHandled

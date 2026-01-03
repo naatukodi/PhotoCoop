@@ -77,39 +77,62 @@ public class PaymentService : IPaymentService
 
     public async Task<bool> HandleWebhookAsync(RazorpayWebhookEvent evt, CancellationToken ct = default)
     {
+        Console.WriteLine($"[PaymentWebhook] Received event={evt.Event}, orderId={evt.OrderId}, paymentId={evt.PaymentId}, signature={evt.SignatureMaybe}");
+
         if (string.IsNullOrWhiteSpace(evt.OrderId))
+        {
+            Console.WriteLine("[PaymentWebhook] Missing order id, ignoring webhook.");
             return false;
+        }
 
         if (evt.Event == "payment.captured")
         {
             // locate attempt by order_id
             var attempt = await _attemptRepo.GetByRazorpayOrderIdAsync(evt.OrderId!, ct);
-            if (attempt == null) return false; // ignore or log
+            if (attempt == null)
+            {
+                Console.WriteLine($"[PaymentWebhook] No payment attempt found for order {evt.OrderId}.");
+                return false; // ignore or log
+            }
 
             // idempotency: if already paid/refunded etc, ignore
             if (attempt.Status == PaymentAttemptStatus.Paid || attempt.Status == PaymentAttemptStatus.Refunded)
+            {
+                Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} already settled with status {attempt.Status}, skipping.");
                 return true;
+            }
 
             attempt.MarkPaid(evt.PaymentId!, evt.SignatureMaybe);
             await _attemptRepo.UpdateAsync(attempt, ct);
 
             // ✅ Renew membership ONLY on webhook
+            Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} marked paid. Renewing membership.");
             await _membershipService.RenewMembershipFromPaymentAttemptAsync(attempt.Id, ct);
+            Console.WriteLine($"[PaymentWebhook] Membership renewal complete for attempt {attempt.Id}.");
             return true;
         }
         else if (evt.Event == "payment.failed")
         {
             var attempt = await _attemptRepo.GetByRazorpayOrderIdAsync(evt.OrderId!, ct);
-            if (attempt == null) return false;
+            if (attempt == null)
+            {
+                Console.WriteLine($"[PaymentWebhook] No payment attempt found for failed order {evt.OrderId}.");
+                return false;
+            }
 
             if (attempt.Status == PaymentAttemptStatus.Paid || attempt.Status == PaymentAttemptStatus.Refunded)
+            {
+                Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} already settled with status {attempt.Status}, skipping fail handling.");
                 return true;
+            }
 
             attempt.MarkFailed();
             await _attemptRepo.UpdateAsync(attempt, ct);
+            Console.WriteLine($"[PaymentWebhook] Attempt {attempt.Id} marked failed.");
             return true;
         }
 
+        Console.WriteLine($"[PaymentWebhook] Unhandled event type {evt.Event}.");
         return false;
     }
 
