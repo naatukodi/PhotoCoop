@@ -1,4 +1,5 @@
 using PhotoCoop.Domain.Users;
+using Newtonsoft.Json;
 using PhotoCoop.Domain.Payments;
 
 namespace PhotoCoop.Application.Memberships;
@@ -58,7 +59,8 @@ public class MembershipService : IMembershipService
         var user = await _userRepository.GetByIdAsync(paymentAttempt.PhotographerUserId, cancellationToken);
         if (user == null || user.UserType != UserType.Photographer || user.PhotographerProfile == null)
         {
-            Console.WriteLine($"[MembershipRenewal] Invalid photographer for attempt {paymentAttempt.Id}. UserFound={user != null}, UserType={(user?.UserType.ToString() ?? "<null>")}, ProfilePresent={(user?.PhotographerProfile != null)}");
+            var userJson = user != null ? JsonConvert.SerializeObject(user) : "<null user>";
+            Console.WriteLine($"[MembershipRenewal] Invalid photographer for attempt {paymentAttempt.Id}. UserFound={user != null}, UserType={(user?.UserType.ToString() ?? "<null>")}, ProfilePresent={(user?.PhotographerProfile != null)}. UserPayload={userJson}");
             throw new InvalidOperationException("Invalid photographer.");
         }
 

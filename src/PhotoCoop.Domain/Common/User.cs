@@ -1,4 +1,6 @@
 using PhotoCoop.Domain.Common;
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PhotoCoop.Domain.Users;
 
@@ -17,11 +19,21 @@ public class User : Entity
     public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
     public DateTime? LastLoginAtUtc { get; private set; }
 
+    [JsonProperty(PropertyName = "pincodes")]
+    [JsonPropertyName("pincodes")]
     public List<string> Pincodes { get; private set; } = new(); // simple pincode array
 
     // type-specific sub-objects
+    [JsonProperty(PropertyName = "photographerProfile")]
+    [JsonPropertyName("photographerProfile")]
     public PhotographerProfile? PhotographerProfile { get; private set; }
+
+    [JsonProperty(PropertyName = "customerProfile")]
+    [JsonPropertyName("customerProfile")]
     public CustomerProfile? CustomerProfile { get; private set; }
+
+    [JsonProperty(PropertyName = "adminProfile")]
+    [JsonPropertyName("adminProfile")]
     public AdminProfile? AdminProfile { get; private set; }
 
     private User() { } // for deserialization
