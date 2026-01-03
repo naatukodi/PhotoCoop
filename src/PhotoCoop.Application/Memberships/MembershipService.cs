@@ -53,9 +53,14 @@ public class MembershipService : IMembershipService
         if (paymentAttempt.Status != PaymentAttemptStatus.Paid)
             throw new InvalidOperationException("Payment is not successful.");
 
+        Console.WriteLine($"[MembershipRenewal] AttemptId={paymentAttempt.Id} UserId={paymentAttempt.PhotographerUserId} Status={paymentAttempt.Status} Amount={paymentAttempt.Amount} {paymentAttempt.Currency} RenewalDateUtc={paymentAttempt.RenewalDateUtc:o} PaymentId={paymentAttempt.RazorpayPaymentId} Signature={paymentAttempt.RazorpaySignature}");
+
         var user = await _userRepository.GetByIdAsync(paymentAttempt.PhotographerUserId, cancellationToken);
         if (user == null || user.UserType != UserType.Photographer || user.PhotographerProfile == null)
+        {
+            Console.WriteLine($"[MembershipRenewal] Invalid photographer for attempt {paymentAttempt.Id}. UserFound={user != null}, UserType={(user?.UserType.ToString() ?? "<null>")}, ProfilePresent={(user?.PhotographerProfile != null)}");
             throw new InvalidOperationException("Invalid photographer.");
+        }
 
         // Idempotency: if renewal already moved past target date, do nothing
         var currentRenewal = user.PhotographerProfile.Membership.RenewalDateUtc;
