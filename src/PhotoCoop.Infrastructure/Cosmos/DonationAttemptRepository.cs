@@ -14,7 +14,7 @@ public class DonationAttemptRepository : CosmosRepositoryBase<DonationAttempt>, 
     public async Task<DonationAttempt?> GetByRazorpayOrderIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         var q = _container.GetItemQueryIterator<DonationAttempt>(
-            new QueryDefinition("SELECT * FROM c WHERE c.razorpayOrderId = @orderId")
+            new QueryDefinition("SELECT * FROM c WHERE c.RazorpayOrderId = @orderId")
                 .WithParameter("@orderId", orderId));
 
         while (q.HasMoreResults)

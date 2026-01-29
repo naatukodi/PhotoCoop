@@ -23,3 +23,19 @@ public class StartDonationResponse
     public string Receipt { get; set; } = null!;
     public string EventId { get; set; } = null!;
 }
+
+public class CreateFundraisingEventRequest
+{
+    public string OrganizerUserId { get; set; } = null!;
+    public string Title { get; set; } = null!;
+    public string? Description { get; set; }
+    public decimal? TargetAmount { get; set; }
+    public string Currency { get; set; } = "INR";
+    public DateTime StartDateUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? EndDateUtc { get; set; }
+}
+
+public class ActivateFundraisingEventRequest
+{
+    public string EventId { get; set; } = null!;
+}

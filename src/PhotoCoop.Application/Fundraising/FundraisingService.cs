@@ -6,6 +6,8 @@ namespace PhotoCoop.Application.Fundraising;
 public interface IFundraisingService
 {
     Task<StartDonationResponse> StartDonationAsync(StartDonationRequest request, CancellationToken cancellationToken = default);
+    Task<FundraisingEvent> CreateEventAsync(CreateFundraisingEventRequest request, CancellationToken cancellationToken = default);
+    Task<FundraisingEvent> ActivateEventAsync(ActivateFundraisingEventRequest request, CancellationToken cancellationToken = default);
 }
 
 public class FundraisingService : IFundraisingService
@@ -25,6 +27,29 @@ public class FundraisingService : IFundraisingService
         _attemptRepo = attemptRepo;
         _razorpay = razorpay;
         _options = options.Value;
+    }
+
+    public async Task<FundraisingEvent> CreateEventAsync(CreateFundraisingEventRequest request, CancellationToken cancellationToken = default)
+    {
+        var ev = new FundraisingEvent(
+            organizerUserId: request.OrganizerUserId,
+            title: request.Title,
+            description: request.Description,
+            targetAmount: request.TargetAmount,
+            currency: request.Currency,
+            startDateUtc: request.StartDateUtc,
+            endDateUtc: request.EndDateUtc);
+
+        return await _eventRepo.AddAsync(ev, cancellationToken);
+    }
+
+    public async Task<FundraisingEvent> ActivateEventAsync(ActivateFundraisingEventRequest request, CancellationToken cancellationToken = default)
+    {
+        var ev = await _eventRepo.GetByIdAsync(request.EventId, cancellationToken);
+        if (ev == null) throw new KeyNotFoundException("Fundraising event not found.");
+
+        ev.SetStatus(FundraisingEventStatus.Active);
+        return await _eventRepo.UpdateAsync(ev, cancellationToken);
     }
 
     public async Task<StartDonationResponse> StartDonationAsync(StartDonationRequest request, CancellationToken cancellationToken = default)
